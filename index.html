@@ -13,59 +13,60 @@
       margin: 0; height: 100vh;
       display: flex; flex-direction: column;
       justify-content: center; align-items: center;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: 'Inter', -apple-system, sans-serif;
       overflow: hidden;
     }
-    .brand { font-size: 3.5rem; font-weight: 800; margin-bottom: 5px; letter-spacing: -2px; }
+    .brand { font-size: 4rem; font-weight: 800; margin-bottom: 5px; letter-spacing: -3px; }
     .brand span { color: var(--mp-pink); }
     
     #status {
-      font-size: 0.8rem; color: rgba(255,255,255,0.4);
-      margin-bottom: 50px; text-transform: uppercase; letter-spacing: 3px;
-      transition: color 0.3s;
+      font-size: 0.75rem; color: rgba(255,255,255,0.4);
+      margin-bottom: 60px; text-transform: uppercase; letter-spacing: 4px;
     }
 
     #start-btn {
       background: white; color: black; border: none;
-      padding: 22px 60px; font-size: 1.1rem; font-weight: 700;
+      padding: 24px 70px; font-size: 1rem; font-weight: 800;
       border-radius: 100px; cursor: pointer;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      text-transform: uppercase;
+      transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+      text-transform: uppercase; letter-spacing: 1px;
     }
 
     #start-btn:hover:not(:disabled) {
-      transform: scale(1.05) translateY(-5px);
-      box-shadow: 0 0 40px rgba(255, 0, 255, 0.4);
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(255, 0, 255, 0.25);
     }
 
-    #start-btn:disabled { opacity: 0.2; cursor: wait; }
-
-    /* Voice Visualizer Rings */
-    .visualizer-container {
-      display: none; align-items: center; justify-content: center; height: 100px;
+    /* The "Unicorn" Liquid Visualizer */
+    .viz-box {
+      display: none; height: 80px; align-items: center; gap: 10px;
     }
-    .pulse-ring {
-      width: 20px; height: 20px; background: var(--mp-pink);
-      border-radius: 50%; animation: unicornPulse 1.5s infinite ease-out;
-      box-shadow: 0 0 20px var(--mp-pink);
+    .wave {
+      width: 8px; height: 20px; background: var(--mp-pink);
+      border-radius: 20px; animation: wave 1s infinite ease-in-out;
+      box-shadow: 0 0 15px var(--mp-pink);
     }
+    .wave:nth-child(2) { animation-delay: 0.1s; }
+    .wave:nth-child(3) { animation-delay: 0.2s; }
+    .wave:nth-child(4) { animation-delay: 0.3s; }
+    .wave:nth-child(5) { animation-delay: 0.4s; }
 
-    @keyframes unicornPulse {
-      0% { transform: scale(1); opacity: 1; }
-      100% { transform: scale(4); opacity: 0; }
+    @keyframes wave {
+      0%, 100% { height: 20px; transform: scaleY(1); opacity: 0.4; }
+      50% { height: 80px; transform: scaleY(1.2); opacity: 1; }
     }
   </style>
 </head>
 <body>
 
   <div class="brand">Modpaper<span>.</span></div>
-  <div id="status">Secure Link Offline</div>
+  <div id="status">Sovereign Link Offline</div>
   
   <button id="start-btn" disabled>Authorize Agent</button>
 
-  <div class="visualizer-container" id="visualizer">
-    <div class="pulse-ring"></div>
+  <div class="viz-box" id="viz">
+    <div class="wave"></div><div class="wave"></div>
+    <div class="wave"></div><div class="wave"></div><div class="wave"></div>
   </div>
 
   <vogent-web-widget 
@@ -78,33 +79,28 @@
     const widget = document.getElementById('mp-agent');
     const btn = document.getElementById('start-btn');
     const status = document.getElementById('status');
-    const viz = document.getElementById('visualizer');
+    const viz = document.getElementById('viz');
 
-    // Enable button once custom element is registered
     customElements.whenDefined('vogent-web-widget').then(() => {
       btn.disabled = false;
-      status.innerText = "System Ready for Deployment";
+      status.innerText = "Link Ready for Deployment";
     });
 
     btn.addEventListener('click', async () => {
-      status.innerText = "Requesting Secure Audio Channel...";
-      
       try {
-        // Prime the user for the mic pop-up
+        status.innerText = "Verifying Audio Path...";
         await navigator.mediaDevices.getUserMedia({ audio: true });
         
-        // If successful, start the AI
-        status.innerText = "Channel Verified. Deploying...";
-        status.style.color = "var(--mp-pink)";
-        
+        // Transition UI to Active State
         btn.style.display = 'none';
         viz.style.display = 'flex';
+        status.innerText = "Sovereign Link Active";
+        status.style.color = "var(--mp-pink)";
         
         widget.startCall(); 
       } catch (err) {
-        status.innerText = "Access Denied: Microphone Required";
-        status.style.color = "red";
-        console.error("Mic access denied", err);
+        status.innerText = "Access Denied: Mic Required";
+        status.style.color = "#FF4B4B";
       }
     });
   </script>
