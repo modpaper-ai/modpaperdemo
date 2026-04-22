@@ -3,52 +3,104 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Modpaper AI</title>
+  <title>Modpaper AI | Sovereign Intelligence</title>
+  
   <script src="https://cdn.jsdelivr.net/npm/@vogent/web-widget@latest/dist/index.js"></script>
+
   <style>
+    :root {
+      --mp-pink: #FF00FF;
+      --mp-black: #000000;
+    }
     body {
-      background-color: #000000;
+      background-color: var(--mp-black);
       color: white;
+      margin: 0;
+      height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
-      font-family: sans-serif;
+      font-family: -apple-system, system-ui, sans-serif;
+      overflow: hidden;
     }
-    .logo { font-size: 2.5rem; font-weight: bold; margin-bottom: 2rem; }
+    .brand {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+      letter-spacing: -2px;
+    }
+    .brand span { color: var(--mp-pink); }
+    
+    #status {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 40px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
     #start-btn {
-      background: #ffffff;
-      color: #000000;
+      background: white;
+      color: black;
       border: none;
       padding: 20px 50px;
-      border-radius: 50px;
       font-size: 1.2rem;
-      font-weight: 600;
+      font-weight: 700;
+      border-radius: 100px;
       cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+
+    /* Vapi-style "Hover Glow" */
+    #start-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(255, 0, 255, 0.4);
+    }
+
+    #start-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
     }
   </style>
 </head>
 <body>
 
-  <div class="logo">Modpaper AI</div>
-  <button id="start-btn">Start AI Call</button>
+  <div class="brand">Modpaper<span>.</span></div>
+  <div id="status">Initializing Sovereign Link...</div>
+  
+  <button id="start-btn" disabled>Start Call</button>
 
   <vogent-web-widget 
-    id="my-agent"
+    id="mp-agent"
     public-api-key="pub_vogent_JCoBZQUcfXTeRnVi5JytvN0JBz09kWkW" 
     call-agent-id="3eae1d60-e8f2-48a6-a944-89aed8ea8b75">
   </vogent-web-widget>
 
   <script>
-    const widget = document.getElementById('my-agent');
+    const widget = document.getElementById('mp-agent');
     const btn = document.getElementById('start-btn');
+    const status = document.getElementById('status');
+
+    // Wait for the custom element to be defined by the script
+    customElements.whenDefined('vogent-web-widget').then(() => {
+      btn.disabled = false;
+      status.innerText = "System Ready";
+      console.log("Modpaper Agent Initialized.");
+    });
 
     btn.addEventListener('click', () => {
-      // This is the specific method the CTO mentioned
-      widget.startCall(); 
+      try {
+        status.innerText = "Deploying Agent...";
+        status.style.color = "var(--mp-pink)";
+        widget.startCall(); // The CTO's method
+      } catch (e) {
+        status.innerText = "Connection Error";
+        console.error(e);
+      }
     });
   </script>
+
 </body>
 </html>
