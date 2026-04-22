@@ -16,7 +16,6 @@
       display: flex; flex-direction: column;
       justify-content: center; align-items: center;
       font-family: sans-serif;
-      overflow: hidden;
     }
     .brand { font-size: 3.5rem; font-weight: 800; margin-bottom: 5px; letter-spacing: -2px; }
     .brand span { color: var(--mp-pink); }
@@ -26,24 +25,22 @@
       background: white; color: black; border: none;
       padding: 22px 60px; font-size: 1.1rem; font-weight: 700;
       border-radius: 100px; cursor: pointer;
-      transition: all 0.3s ease;
       text-transform: uppercase;
     }
-    #start-btn:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 0 30px rgba(255, 0, 255, 0.4); }
-    #start-btn:disabled { opacity: 0.2; cursor: wait; }
+    #start-btn:hover { box-shadow: 0 0 30px rgba(255, 0, 255, 0.4); }
 
-    /* Pulsing Visualizer */
-    #viz { display: none; width: 60px; height: 60px; background: var(--mp-pink); border-radius: 50%; animation: pulse 1s infinite alternate; box-shadow: 0 0 20px var(--mp-pink); }
+    /* Pulsing Active State */
+    #active-pulse { display: none; width: 50px; height: 50px; background: var(--mp-pink); border-radius: 50%; animation: pulse 1s infinite alternate; }
     @keyframes pulse { from { transform: scale(0.8); opacity: 0.5; } to { transform: scale(1.2); opacity: 1; } }
   </style>
 </head>
 <body>
 
   <div class="brand">Modpaper<span>.</span></div>
-  <div id="status">Linking to Infrastructure...</div>
+  <div id="status">Ready for Deployment</div>
   
-  <button id="start-btn" disabled>Authorize Agent</button>
-  <div id="viz"></div>
+  <button id="start-btn">Authorize Agent</button>
+  <div id="active-pulse"></div>
 
   <vogent-web-widget 
     id="mp-agent"
@@ -52,32 +49,29 @@
   </vogent-web-widget>
 
   <script>
-    const widget = document.getElementById('mp-agent');
     const btn = document.getElementById('start-btn');
+    const widget = document.getElementById('mp-agent');
     const status = document.getElementById('status');
-    const viz = document.getElementById('viz');
-
-    // 2. Ensure the widget is registered before allowing clicks
-    customElements.whenDefined('vogent-web-widget').then(() => {
-      btn.disabled = false;
-      status.innerText = "System Ready";
-    });
+    const pulse = document.getElementById('active-pulse');
 
     btn.addEventListener('click', async () => {
       try {
-        // 3. Request Mic Access FIRST (The "Unicorn" way)
+        // 1. Force Mic Access
         await navigator.mediaDevices.getUserMedia({ audio: true });
         
+        // 2. UI Transition
         status.innerText = "Sovereign Link Active";
         status.style.color = "var(--mp-pink)";
         btn.style.display = 'none';
-        viz.style.display = 'block';
+        pulse.style.display = 'block';
 
-        // 4. Fire the CTO's method
-        if (widget && typeof widget.startCall === 'function') {
+        // 3. Direct Method Call (Override wait)
+        if (widget && widget.startCall) {
             widget.startCall();
         } else {
-            console.error("Widget method 'startCall' not found. Check script load.");
+            // Fallback for custom element lag
+            const el = document.querySelector('vogent-web-widget');
+            if (el) el.startCall();
         }
       } catch (err) {
         status.innerText = "Error: Mic Access Required";
