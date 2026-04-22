@@ -15,32 +15,55 @@
       margin: 0; height: 100vh;
       display: flex; flex-direction: column;
       justify-content: center; align-items: center;
-      font-family: sans-serif;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
     }
-    .brand { font-size: 3.5rem; font-weight: 800; margin-bottom: 5px; letter-spacing: -2px; }
+    .brand { font-size: 4rem; font-weight: 800; margin-bottom: 5px; letter-spacing: -3px; }
     .brand span { color: var(--mp-pink); }
-    #status { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-bottom: 50px; text-transform: uppercase; letter-spacing: 3px; }
     
+    #status {
+      font-size: 0.75rem; color: rgba(255,255,255,0.4);
+      margin-bottom: 60px; text-transform: uppercase; letter-spacing: 4px;
+    }
+
     #start-btn {
       background: white; color: black; border: none;
-      padding: 22px 60px; font-size: 1.1rem; font-weight: 700;
+      padding: 24px 70px; font-size: 1rem; font-weight: 800;
       border-radius: 100px; cursor: pointer;
+      transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
       text-transform: uppercase;
     }
-    #start-btn:hover { box-shadow: 0 0 30px rgba(255, 0, 255, 0.4); }
 
-    /* Pulsing Active State */
-    #active-pulse { display: none; width: 50px; height: 50px; background: var(--mp-pink); border-radius: 50%; animation: pulse 1s infinite alternate; }
-    @keyframes pulse { from { transform: scale(0.8); opacity: 0.5; } to { transform: scale(1.2); opacity: 1; } }
+    #start-btn:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(255, 0, 255, 0.25);
+    }
+
+    /* Active Visualizer */
+    .viz-box {
+      display: none; height: 80px; align-items: center; gap: 10px;
+    }
+    .wave {
+      width: 8px; height: 20px; background: var(--mp-pink);
+      border-radius: 20px; animation: wave 1s infinite ease-in-out;
+    }
+    @keyframes wave {
+      0%, 100% { height: 20px; opacity: 0.4; }
+      50% { height: 80px; opacity: 1; }
+    }
   </style>
 </head>
 <body>
 
   <div class="brand">Modpaper<span>.</span></div>
-  <div id="status">Ready for Deployment</div>
+  <div id="status">Secure Link Ready</div>
   
   <button id="start-btn">Authorize Agent</button>
-  <div id="active-pulse"></div>
+
+  <div class="viz-box" id="viz">
+    <div class="wave"></div><div class="wave" style="animation-delay: 0.1s"></div>
+    <div class="wave" style="animation-delay: 0.2s"></div><div class="wave" style="animation-delay: 0.3s"></div>
+  </div>
 
   <vogent-web-widget 
     id="mp-agent"
@@ -49,33 +72,21 @@
   </vogent-web-widget>
 
   <script>
-    const btn = document.getElementById('start-btn');
     const widget = document.getElementById('mp-agent');
+    const btn = document.getElementById('start-btn');
     const status = document.getElementById('status');
-    const pulse = document.getElementById('active-pulse');
+    const viz = document.getElementById('viz');
 
-    btn.addEventListener('click', async () => {
-      try {
-        // 1. Force Mic Access
-        await navigator.mediaDevices.getUserMedia({ audio: true });
+    btn.addEventListener('click', () => {
+      // Direct call to start the agent
+      if (widget && typeof widget.startCall === 'function') {
+        widget.startCall();
         
-        // 2. UI Transition
+        // Instant UI Transition
+        btn.style.display = 'none';
+        viz.style.display = 'flex';
         status.innerText = "Sovereign Link Active";
         status.style.color = "var(--mp-pink)";
-        btn.style.display = 'none';
-        pulse.style.display = 'block';
-
-        // 3. Direct Method Call (Override wait)
-        if (widget && widget.startCall) {
-            widget.startCall();
-        } else {
-            // Fallback for custom element lag
-            const el = document.querySelector('vogent-web-widget');
-            if (el) el.startCall();
-        }
-      } catch (err) {
-        status.innerText = "Error: Mic Access Required";
-        status.style.color = "red";
       }
     });
   </script>
