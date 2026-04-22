@@ -3,74 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Modpaper AI | Sovereign Intelligence</title>
-  
+  <title>Modpaper AI | Sovereign Link</title>
   <script src="https://cdn.jsdelivr.net/npm/@vogent/web-widget@latest/dist/index.js"></script>
-
   <style>
-    :root {
-      --mp-pink: #FF00FF;
-      --mp-black: #000000;
-    }
+    :root { --mp-pink: #FF00FF; --mp-black: #000000; }
     body {
       background-color: var(--mp-black);
       color: white;
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      font-family: -apple-system, system-ui, sans-serif;
+      margin: 0; height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       overflow: hidden;
     }
-    .brand {
-      font-size: 3rem;
-      font-weight: 800;
-      margin-bottom: 10px;
-      letter-spacing: -2px;
-    }
+    .brand { font-size: 3.5rem; font-weight: 800; margin-bottom: 5px; letter-spacing: -2px; }
     .brand span { color: var(--mp-pink); }
     
     #status {
-      font-size: 0.9rem;
-      color: rgba(255,255,255,0.5);
-      margin-bottom: 40px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
+      font-size: 0.8rem; color: rgba(255,255,255,0.4);
+      margin-bottom: 50px; text-transform: uppercase; letter-spacing: 3px;
+      transition: color 0.3s;
     }
 
     #start-btn {
-      background: white;
-      color: black;
-      border: none;
-      padding: 20px 50px;
-      font-size: 1.2rem;
-      font-weight: 700;
-      border-radius: 100px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+      background: white; color: black; border: none;
+      padding: 22px 60px; font-size: 1.1rem; font-weight: 700;
+      border-radius: 100px; cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      text-transform: uppercase;
     }
 
-    /* Vapi-style "Hover Glow" */
-    #start-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 30px rgba(255, 0, 255, 0.4);
+    #start-btn:hover:not(:disabled) {
+      transform: scale(1.05) translateY(-5px);
+      box-shadow: 0 0 40px rgba(255, 0, 255, 0.4);
     }
 
-    #start-btn:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
+    #start-btn:disabled { opacity: 0.2; cursor: wait; }
+
+    /* Voice Visualizer Rings */
+    .visualizer-container {
+      display: none; align-items: center; justify-content: center; height: 100px;
+    }
+    .pulse-ring {
+      width: 20px; height: 20px; background: var(--mp-pink);
+      border-radius: 50%; animation: unicornPulse 1.5s infinite ease-out;
+      box-shadow: 0 0 20px var(--mp-pink);
+    }
+
+    @keyframes unicornPulse {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(4); opacity: 0; }
     }
   </style>
 </head>
 <body>
 
   <div class="brand">Modpaper<span>.</span></div>
-  <div id="status">Initializing Sovereign Link...</div>
+  <div id="status">Secure Link Offline</div>
   
-  <button id="start-btn" disabled>Start Call</button>
+  <button id="start-btn" disabled>Authorize Agent</button>
+
+  <div class="visualizer-container" id="visualizer">
+    <div class="pulse-ring"></div>
+  </div>
 
   <vogent-web-widget 
     id="mp-agent"
@@ -82,25 +78,35 @@
     const widget = document.getElementById('mp-agent');
     const btn = document.getElementById('start-btn');
     const status = document.getElementById('status');
+    const viz = document.getElementById('visualizer');
 
-    // Wait for the custom element to be defined by the script
+    // Enable button once custom element is registered
     customElements.whenDefined('vogent-web-widget').then(() => {
       btn.disabled = false;
-      status.innerText = "System Ready";
-      console.log("Modpaper Agent Initialized.");
+      status.innerText = "System Ready for Deployment";
     });
 
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
+      status.innerText = "Requesting Secure Audio Channel...";
+      
       try {
-        status.innerText = "Deploying Agent...";
+        // Prime the user for the mic pop-up
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        // If successful, start the AI
+        status.innerText = "Channel Verified. Deploying...";
         status.style.color = "var(--mp-pink)";
-        widget.startCall(); // The CTO's method
-      } catch (e) {
-        status.innerText = "Connection Error";
-        console.error(e);
+        
+        btn.style.display = 'none';
+        viz.style.display = 'flex';
+        
+        widget.startCall(); 
+      } catch (err) {
+        status.innerText = "Access Denied: Microphone Required";
+        status.style.color = "red";
+        console.error("Mic access denied", err);
       }
     });
   </script>
-
 </body>
 </html>
