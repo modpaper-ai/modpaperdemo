@@ -1,77 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modpaper AI | Sovereign Link</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=DM+Sans:wght@500&display=swap" rel="stylesheet">
-    <style>
-        :root { --pink: #FF00FF; --black: #000000; }
-        body { background: var(--black); color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'DM Sans', sans-serif; overflow: hidden; }
-        .brand { font-family: 'Syne', sans-serif; font-size: clamp(48px, 10vw, 80px); letter-spacing: -4px; margin-bottom: 10px; }
-        .brand span { color: var(--pink); }
-        #status { font-size: 11px; text-transform: uppercase; letter-spacing: 4px; color: rgba(255,255,255,0.4); margin-bottom: 40px; }
-        #startBtn { background: white; color: black; border: none; padding: 22px 72px; border-radius: 100px; font-family: 'Syne', sans-serif; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; }
-        #waves { display: none; gap: 6px; height: 60px; align-items: center; }
-        .bar { width: 4px; height: 15px; background: var(--pink); border-radius: 10px; animation: pulse 1s infinite ease-in-out; }
-        @keyframes pulse { 0%, 100% { height: 12px; opacity: 0.3; } 50% { height: 60px; opacity: 1; } }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Modpaper Voice Demo</title>
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+
+  <!-- Vogent Widget -->
+  <script src="https://cdn.jsdelivr.net/npm/@vogent/web-widget@latest/dist/index.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: "Syne", sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .brand {
+      font-size: 72px;
+      font-weight: 800;
+      letter-spacing: -2px;
+    }
+
+    .dot {
+      color: #ff00cc;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 12px;
+      letter-spacing: 4px;
+      color: #ff00cc;
+    }
+
+    button {
+      margin-top: 40px;
+      background: #fff;
+      color: #000;
+      border: none;
+      padding: 14px 28px;
+      font-size: 12px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    .waves {
+      display: none;
+      margin-top: 40px;
+      gap: 4px;
+    }
+
+    .bar {
+      width: 4px;
+      height: 10px;
+      background: #ff00cc;
+      animation: bounce 1s infinite ease-in-out;
+    }
+
+    @keyframes bounce {
+      0%, 100% { height: 10px; opacity: 0.3; }
+      50% { height: 40px; opacity: 1; }
+    }
+
+    .debug {
+      position: absolute;
+      bottom: 20px;
+      font-size: 11px;
+      opacity: 0.5;
+    }
+  </style>
 </head>
+
 <body>
 
-    <div class="brand">Modpaper<span>.</span></div>
-    <div id="status">Secure link ready</div>
-    
-    <button id="startBtn" onclick="launchAgent()">Authorize Agent</button>
+  <div class="brand">Modpaper<span class="dot">.</span></div>
+  <div id="status" class="status">READY</div>
 
-    <div id="waves">
-        <div class="bar" style="animation-delay: 0.0s"></div>
-        <div class="bar" style="animation-delay: 0.1s"></div>
-        <div class="bar" style="animation-delay: 0.2s"></div>
-        <div class="bar" style="animation-delay: 0.3s"></div>
-        <div class="bar" style="animation-delay: 0.2s"></div>
-        <div class="bar" style="animation-delay: 0.1s"></div>
-        <div class="bar" style="animation-delay: 0.0s"></div>
-    </div>
+  <button id="startBtn">Launch Agent</button>
 
-    <vogent-web-widget 
-        id="mp-agent"
-        public-api-key="pub_vogent_JCoBZQUcfXTeRnVi5JytvN0JBz09kWkW" 
-        call-agent-id="3eae1d60-e8f2-48a6-a944-89aed8ea8b75">
-    </vogent-web-widget>
+  <div id="waves" class="waves">
+    <div class="bar" style="animation-delay: 0s"></div>
+    <div class="bar" style="animation-delay: 0.1s"></div>
+    <div class="bar" style="animation-delay: 0.2s"></div>
+    <div class="bar" style="animation-delay: 0.3s"></div>
+    <div class="bar" style="animation-delay: 0.4s"></div>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@vogent/web-widget@latest/dist/index.js"></script>
+  <div id="debug" class="debug">idle</div>
 
-    <script>
-        async function launchAgent() {
-            const widget = document.getElementById('mp-agent');
-            const btn = document.getElementById('startBtn');
-            const status = document.getElementById('status');
-            const waves = document.getElementById('waves');
+<script>
+let audioCtx;
 
-            try {
-                // 1. Critical: Pre-request mic to "warm up" the browser stream
-                await navigator.mediaDevices.getUserMedia({ audio: true });
+async function launchAgent() {
+  const btn = document.getElementById("startBtn");
+  const waves = document.getElementById("waves");
+  const status = document.getElementById("status");
+  const debug = document.getElementById("debug");
 
-                // 2. Clear audio context to ensure AI can speak immediately
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') await audioCtx.resume();
+  try {
+    debug.innerText = "requesting mic...";
 
-                // 3. UI Transition
-                btn.style.display = 'none';
-                waves.style.display = 'flex';
-                status.innerText = "Sovereign Link Active";
-                status.style.color = "var(--pink)";
+    // 1. Request mic access (must be user-triggered)
+    await navigator.mediaDevices.getUserMedia({ audio: true });
 
-                // 4. Start call via Vogent Method
-                if (widget && typeof widget.startCall === 'function') {
-                    widget.startCall();
-                }
-            } catch (err) {
-                status.innerText = "Error: Mic Required";
-                status.style.color = "red";
-            }
-        }
-    </script>
+    debug.innerText = "mic granted";
+
+    // 2. Create AudioContext
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // 3. CRITICAL: Resume audio context
+    if (audioCtx.state === "suspended") {
+      await audioCtx.resume();
+    }
+
+    debug.innerText = "audio unlocked";
+
+    // 4. UI updates
+    btn.style.display = "none";
+    waves.style.display = "flex";
+    status.innerText = "SOVEREIGN LINK ACTIVE";
+
+    // 5. Small delay ensures browser fully unlocks audio
+    await new Promise(r => setTimeout(r, 200));
+
+    debug.innerText = "starting call...";
+
+    // 6. Start Vogent call safely
+    if (window.vogent && typeof window.vogent.startCall === "function") {
+      window.vogent.startCall();
+      debug.innerText = "call started";
+    } else {
+      debug.innerText = "vogent not ready";
+      console.error("Vogent not loaded");
+    }
+
+  } catch (err) {
+    console.error(err);
+    status.innerText = "MIC REQUIRED";
+    status.style.color = "red";
+    debug.innerText = "error: " + err.message;
+  }
+}
+
+// Attach click handler
+document.getElementById("startBtn").addEventListener("click", launchAgent);
+</script>
+
 </body>
 </html>
