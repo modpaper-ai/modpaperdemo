@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Modpaper Voice Demo</title>
 
+  <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 
-  <!-- Vogent -->
+  <!-- Vogent SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@vogent/web-widget@latest/dist/index.js"></script>
 
   <style>
@@ -41,6 +42,18 @@
       margin-top: 40px;
       padding: 14px 28px;
       cursor: pointer;
+      background: white;
+      color: black;
+      border: none;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .debug {
+      position: absolute;
+      bottom: 20px;
+      font-size: 11px;
+      opacity: 0.6;
     }
   </style>
 </head>
@@ -48,46 +61,109 @@
 <body>
 
   <div class="brand">Modpaper<span class="dot">.</span></div>
-  <div id="status" class="status">READY</div>
+  <div id="status" class="status">LOADING</div>
 
   <button id="startBtn">Launch Agent</button>
 
+  <div id="debug" class="debug">init...</div>
+
 <script>
-let agent;
+let agent = null;
 
-window.addEventListener("load", () => {
-  // 🔥 THIS is the missing piece
-  agent = new Vogent({
-    agentId: "3eae1d60-e8f2-48a6-a944-89aed8ea0b75"
+// 🔥 Wait until Vogent is actually available
+function waitForVogent() {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+
+    const check = () => {
+      if (window.Vogent) {
+        resolve(window.Vogent);
+      } else {
+        attempts++;
+        if (attempts > 50) {
+          reject("Vogent failed to load");
+        } else {
+          setTimeout(check, 100);
+        }
+      }
+    };
+
+    check();
   });
+}
 
-  console.log("Agent initialized:", agent);
-});
-
-async function launchAgent() {
+// 🔧 Initialize agent safely
+window.addEventListener("load", async () => {
   const status = document.getElementById("status");
+  const debug = document.getElementById("debug");
 
   try {
-    // 1. Unlock mic
+    debug.innerText = "waiting for vogent...";
+
+    const VogentLib = await waitForVogent();
+
+    debug.innerText = "vogent loaded";
+
+    agent = new VogentLib({
+      agentId: "3eae1d60-e8f2-48a6-a944-89aed8ea0b75"
+    });
+
+    console.log("✅ Agent ready:", agent);
+
+    status.innerText = "READY";
+    debug.innerText = "agent initialized";
+
+  } catch (err) {
+    console.error(err);
+    status.innerText = "VOGENT FAILED";
+    debug.innerText = err;
+  }
+});
+
+// 🚀 Launch call
+async function launchAgent() {
+  const status = document.getElementById("status");
+  const debug = document.getElementById("debug");
+
+  if (!agent) {
+    status.innerText = "AGENT NOT READY";
+    debug.innerText = "agent null";
+    return;
+  }
+
+  try {
+    debug.innerText = "requesting mic...";
+
+    // 1. Mic permission
     await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    // 2. Unlock audio
+    debug.innerText = "mic granted";
+
+    // 2. Unlock audio playback
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    await audioCtx.resume();
+
+    if (audioCtx.state === "suspended") {
+      await audioCtx.resume();
+    }
+
+    debug.innerText = "audio unlocked";
 
     status.innerText = "CONNECTING...";
 
-    // 3. Start REAL call (now tied to your agent)
+    // 3. Start call
     await agent.startCall();
 
     status.innerText = "SOVEREIGN LINK ACTIVE";
+    debug.innerText = "call live";
 
   } catch (err) {
     console.error(err);
     status.innerText = "ERROR";
+    debug.innerText = err.message;
   }
 }
 
+// Button click
 document.getElementById("startBtn").addEventListener("click", launchAgent);
 </script>
 
