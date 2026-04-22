@@ -7,21 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=DM+Sans:wght@500&display=swap" rel="stylesheet">
     <style>
         :root { --pink: #FF00FF; --black: #000000; }
-        body {
-            background: var(--black); color: white; margin: 0; height: 100vh;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            font-family: 'DM Sans', sans-serif; overflow: hidden;
-        }
+        body { background: var(--black); color: white; margin: 0; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'DM Sans', sans-serif; overflow: hidden; }
         .brand { font-family: 'Syne', sans-serif; font-size: clamp(48px, 10vw, 80px); letter-spacing: -4px; margin-bottom: 10px; }
         .brand span { color: var(--pink); }
         #status { font-size: 11px; text-transform: uppercase; letter-spacing: 4px; color: rgba(255,255,255,0.4); margin-bottom: 40px; }
-        
-        #startBtn {
-            background: white; color: black; border: none; padding: 22px 72px; 
-            border-radius: 100px; font-family: 'Syne', sans-serif; font-weight: 800;
-            cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
-        }
-
+        #startBtn { background: white; color: black; border: none; padding: 22px 72px; border-radius: 100px; font-family: 'Syne', sans-serif; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; }
         #waves { display: none; gap: 6px; height: 60px; align-items: center; }
         .bar { width: 4px; height: 15px; background: var(--pink); border-radius: 10px; animation: pulse 1s infinite ease-in-out; }
         @keyframes pulse { 0%, 100% { height: 12px; opacity: 0.3; } 50% { height: 60px; opacity: 1; } }
@@ -32,7 +22,7 @@
     <div class="brand">Modpaper<span>.</span></div>
     <div id="status">Secure link ready</div>
     
-    <button id="startBtn" onclick="connectSovereignLink()">Authorize Agent</button>
+    <button id="startBtn" onclick="launchAgent()">Authorize Agent</button>
 
     <div id="waves">
         <div class="bar" style="animation-delay: 0.0s"></div>
@@ -53,26 +43,33 @@
     <script src="https://cdn.jsdelivr.net/npm/@vogent/web-widget@latest/dist/index.js"></script>
 
     <script>
-        async function connectSovereignLink() {
+        async function launchAgent() {
             const widget = document.getElementById('mp-agent');
             const btn = document.getElementById('startBtn');
             const status = document.getElementById('status');
             const waves = document.getElementById('waves');
 
-            // 1. AUDIO UNLOCK: Ensures the browser plays the AI's voice
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') { await audioCtx.resume(); }
+            try {
+                // 1. Critical: Pre-request mic to "warm up" the browser stream
+                await navigator.mediaDevices.getUserMedia({ audio: true });
 
-            // 2. UI TRANSITION
-            btn.style.display = 'none';
-            waves.style.display = 'flex';
-            status.innerText = "Sovereign Link Active";
-            status.style.color = "var(--pink)";
+                // 2. Clear audio context to ensure AI can speak immediately
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-            // 3. START CALL
-            if (widget && typeof widget.startCall === 'function') {
-                widget.startCall();
-                console.log("Sovereign Agent Synchronized.");
+                // 3. UI Transition
+                btn.style.display = 'none';
+                waves.style.display = 'flex';
+                status.innerText = "Sovereign Link Active";
+                status.style.color = "var(--pink)";
+
+                // 4. Start call via Vogent Method
+                if (widget && typeof widget.startCall === 'function') {
+                    widget.startCall();
+                }
+            } catch (err) {
+                status.innerText = "Error: Mic Required";
+                status.style.color = "red";
             }
         }
     </script>
