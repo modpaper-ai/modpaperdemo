@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Modpaper AI</title>
-  
   <script src="https://cdn.jsdelivr.net/npm/@vogent/web-widget@latest/dist/index.js"></script>
-
   <style>
     body {
       background-color: #000000;
@@ -17,47 +15,40 @@
       align-items: center;
       height: 100vh;
       margin: 0;
-      font-family: 'Inter', sans-serif;
+      font-family: sans-serif;
     }
-    .brand { font-size: 2.5rem; font-weight: bold; margin-bottom: 2rem; }
-    #call-btn {
-      background: white;
-      color: black;
+    .logo { font-size: 2.5rem; font-weight: bold; margin-bottom: 2rem; }
+    #start-btn {
+      background: #ffffff;
+      color: #000000;
       border: none;
       padding: 20px 50px;
-      border-radius: 100px;
+      border-radius: 50px;
       font-size: 1.2rem;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.2s;
     }
-    #call-btn:hover { transform: scale(1.05); }
   </style>
 </head>
 <body>
 
-  <div class="brand">Modpaper AI</div>
-  
-  <button id="call-btn">Start AI Call</button>
+  <div class="logo">Modpaper AI</div>
+  <button id="start-btn">Start AI Call</button>
 
   <vogent-web-widget 
-    id="vogent-agent"
+    id="my-agent"
     public-api-key="pub_vogent_JCoBZQUcfXTeRnVi5JytvN0JBz09kWkW" 
     call-agent-id="3eae1d60-e8f2-48a6-a944-89aed8ea8b75">
   </vogent-web-widget>
 
   <script>
-    // 4. THE ACTION: Linking the button to the widget
-    const widget = document.querySelector('vogent-web-widget');
-    const btn = document.getElementById('call-btn');
+    const widget = document.getElementById('my-agent');
+    const btn = document.getElementById('start-btn');
 
     btn.addEventListener('click', () => {
-      // Calling the specific method confirmed by the CTO
-      if (widget) {
-        widget.startCall();
-      }
+      // This is the specific method the CTO mentioned
+      widget.startCall(); 
     });
   </script>
-
 </body>
 </html>
